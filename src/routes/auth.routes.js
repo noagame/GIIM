@@ -29,32 +29,52 @@ router.get('/users', async (req, res) => {
 });
 
 /* Ruta de Actualizaciones  
-    - Acutializar nombre
+    - Acutilizar nombre
     - Actualizar apellido
     - Actualizar email
     - Actualizar estado de actividad
     - Actualizar rol
 */
-app.put('/users/:id', async (req, res) => {
+router.patch('/users/:id', async (req, res) => {
     const { id } = req.params;
-    const { name_user, last_name, email, is_active, rol } = req.body;
+    const campos = req.body;
+
+    // Validación de que el cuerpo no esté vacío
+    const llaves = Object.keys.values(campos);
+    if (llaves.length === 0) {
+        return res.status(400).json({ error: 'El cuerpo de la solicitud no puede estar vacío' });
+    }
+
     try {
-        const result = await pool.query(
-            'UPDATE Users SET name_user = $1, last_name = $2, email = $3, is_active = $4, rol = $5 WHERE id_users = $6 RETURNING *',
-            [name_user, last_name, email, is_active, rol, id]
-        );
+        // Construcción dinámica de la parte SET de la consulta SQL
+        const setSql = llaves
+        .map((key, index) => `${key} = $${index + 1}`)
+        .join(', ');
+
+        // Valores correspondientes a los campos a actualizar
+        const valores = Object.values(campos);
+
+        // Construcción de la consulta SQL dinámica
+        const query = `UPDATE Users SET ${setSql} WHERE id_users = $${llaves.length + 1} RETURNING *`;
+        
+        // Ejecución de arreglo + ID usuario
+        const result = await pool.query( query, [...valores, id]);
+
+        // Verificación de que el usuario exista
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
         res.status(200).json(result.rows[0]);
+
     } catch (e) {
+        // Manejo de errores
         console.error('Error al actualizar usuario:', e);
         res.status(500).json({ error: 'Error al actualizar usuario' });
     }
 });
 
 // Ruta de eliminación de usuario
-app.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM Users WHERE id_users = $1 RETURNING *', [id]);

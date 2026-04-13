@@ -2,7 +2,9 @@ const { app, BrowserWindow } = require('electron');
 const express = require('express');
 const pool = require('./src/config/db');
 const api = express();
+const userRoutes = require('./src/routes/auth.routes');
 
+api.use('/api', userRoutes);
 api.use(express.json());
 
 
