@@ -1,0 +1,101 @@
+/* Importamos una fuente limpia (opcional, pero le da un buen toque) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+:root {
+    /* Paleta de colores */
+    --bg-dark: #1E1E1C; /* 60% */
+    --cream: #DCC9A9;   /* 30% */
+    --red-accent: #B83A2D; /* 10% */
+    --green-accent: #4E6851; /* Detalles y hover */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark); /* 60% Dominante */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.auth-container {
+    background-color: var(--cream); /* 30% Secundario */
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.auth-container h2 {
+    color: var(--bg-dark);
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--bg-dark);
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #c5b290; /* Un crema más oscuro para el borde */
+    border-radius: 6px;
+    background-color: #f0e6d6;
+    color: var(--bg-dark);
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--green-accent); /* Verde para indicar que está activo */
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--red-accent); /* 10% Acento */
+    color: var(--cream);
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--green-accent); /* Cambia a verde al pasar el mouse */
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.auth-links a {
+    color: var(--green-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
