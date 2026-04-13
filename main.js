@@ -5,6 +5,9 @@ const api = express();
 const userRoutes = require('./src/routes/auth.routes');
 
 api.use('/api', userRoutes);
+api.listen(3000, () => {
+    console.log('Servidor Node.js escuchando en el puerto 3000');
+});
 api.use(express.json());
 
 
