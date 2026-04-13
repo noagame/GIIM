@@ -8,6 +8,7 @@ const initDb = async () => {
                 name_user VARCHAR(25) NOT NULL,
                 last_name VARCHAR(25) NOT NULL,
                 email VARCHAR(50) NOT NULL UNIQUE,
+                pass VARCHAR(50) NOT NULL, 
                 is_active BOOLEAN DEFAULT false,
                 rol VARCHAR(10) NOT NULL
             );

@@ -1,16 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
+const userService = require('../services/user.service'); // Importamos el servicio
 
 // Ruta de registro de usuario
 router.post('/register', async (req, res) => {
-    const { name_user, last_name, email, is_active, rol } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO Users (name_user, last_name, email, is_active, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [name_user, last_name, email, is_active, rol]
-        );
-        res.status(201).json(result.rows[0]);
+        // Usamos el servicio para crear el usuario
+        const nuevoUsuario = await userService.crearUsuario(req.body); 
+
+        res.status(201).json(nuevoUsuario);
     } catch (e) {
         console.error('Error al registrar usuario:', e);
         res.status(500).json({ error: 'Error al registrar usuario' });
@@ -20,55 +19,44 @@ router.post('/register', async (req, res) => {
 // Ruta de Consulta de ususarios
 router.get('/users', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM Users');
-        res.status(200).json(result.rows);
+        // Usamos el servicio para obtener los usuarios
+        const usuarios = await userService.obtenerUsuarios(); 
+        res.status(200).json(usuarios);
     } catch (e) {
         console.error('Error al obtener usuarios:', e);
         res.status(500).json({ error: 'Error al obtener usuarios' });
     }
 });
 
-/* Ruta de Actualizaciones  
-    - Acutilizar nombre
-    - Actualizar apellido
-    - Actualizar email
-    - Actualizar estado de actividad
-    - Actualizar rol
-*/
+
 router.patch('/users/:id', async (req, res) => {
     const { id } = req.params;
-    const campos = req.body;
+    const camposRecibidos = req.body;
 
-    // Validación de que el cuerpo no esté vacío
-    const llaves = Object.keys.values(campos);
-    if (llaves.length === 0) {
-        return res.status(400).json({ error: 'El cuerpo de la solicitud no puede estar vacío' });
+    // Whitelist de campos permitidos para actualización
+    const camposPermitidos = ['name_user', 'last_name', 'email', 'is_active', 'pass'];
+
+    // Filtramos solo los campos permitidos
+    const camposFiltrados = {};
+    Object.keys(camposRecibidos).forEach(key => {
+        if (camposPermitidos.includes(key)) {
+            camposFiltrados[key] = camposRecibidos[key];
+        }
+    });
+        
+    if (Object.keys(camposFiltrados).length === 0) {
+        return res.status(400).json({ error: 'No hay campos validos para actualizar ' });
     }
 
     try {
-        // Construcción dinámica de la parte SET de la consulta SQL
-        const setSql = llaves
-        .map((key, index) => `${key} = $${index + 1}`)
-        .join(', ');
+        const usuarioActualizado = await userService.actualizacionParametros(id, camposFiltrados);
 
-        // Valores correspondientes a los campos a actualizar
-        const valores = Object.values(campos);
-
-        // Construcción de la consulta SQL dinámica
-        const query = `UPDATE Users SET ${setSql} WHERE id_users = $${llaves.length + 1} RETURNING *`;
-        
-        // Ejecución de arreglo + ID usuario
-        const result = await pool.query( query, [...valores, id]);
-
-        // Verificación de que el usuario exista
-        if (result.rows.length === 0) {
+        if (!usuarioActualizado) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        res.status(200).json(result.rows[0]);
-
+        res.status(200).json(usuarioActualizado);
     } catch (e) {
-        // Manejo de errores
-        console.error('Error al actualizar usuario:', e);
+        console.error(e);
         res.status(500).json({ error: 'Error al actualizar usuario' });
     }
 });
@@ -77,13 +65,12 @@ router.patch('/users/:id', async (req, res) => {
 router.delete('/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query('DELETE FROM Users WHERE id_users = $1 RETURNING *', [id]);
-        if (result.rows.length === 0) {
+        const eliminado = await userService.eliminarUsuario();
+        if (!eliminado) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
         res.status(200).json({ message: 'Usuario eliminado correctamente' });
     } catch (e) {
-        console.error('Error al eliminar usuario:', e);
         res.status(500).json({ error: 'Error al eliminar usuario' });
     }
 });
