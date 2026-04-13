@@ -52,18 +52,22 @@ body {
     font-size: 14px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px;
-    border: 2px solid #c5b290; /* Un crema más oscuro para el borde */
+    border: 2px solid #c5b290;
     border-radius: 6px;
     background-color: #f0e6d6;
     color: var(--bg-dark);
     outline: none;
     transition: border-color 0.3s;
+    /* Agregamos esto para que el texto de la lista no se vea raro */
+    appearance: auto;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus{
     border-color: var(--green-accent); /* Verde para indicar que está activo */
 }
 

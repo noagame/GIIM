@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <meta
+      http-equiv="X-Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
     <title>Registro - GIIM</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -24,7 +32,11 @@
             </div>
             <div class="form-group">
                 <label for="role">Rol en el Sistema</label>
-                <input type="text" id="role" required placeholder="Ej: medico, admin, farmaceutico">
+                <select id="role" required>
+                    <option value="">Selecciona un rol</option>
+                    <option value="medico">Médico</option>
+                    <option value="farmaceutico">Farmáceutico</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="password">Contraseña Temporal</label>
