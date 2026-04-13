@@ -1,20 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
 const userService = require('../services/user.service'); // Importamos el servicio
+const { validarRegistro } = require('../middlewares/auth.middleware'); // Importamos el middleware de validación
 
 // Ruta de registro de usuario
-router.post('/register', async (req, res) => {
+router.post('/register', validarRegistro, async (req, res) => {
+    console.log("📥 Nueva solicitud de registro recibida:", req.body); // <-- Agrega esta línea
     try {
         // Usamos el servicio para crear el usuario
         const nuevoUsuario = await userService.crearUsuario(req.body); 
 
-        res.status(201).json(nuevoUsuario);
+        res.status(201).json({ message: "Usuario registrado. Pendiente a aprobación.", usuario: nuevoUsuario });
     } catch (e) {
-        console.error('Error al registrar usuario:', e);
         res.status(500).json({ error: 'Error al registrar usuario' });
     }
 });
+
+// Ruta de login de usuario
+router.post('/login', async (req, res) => {
+    const { email, pass } = req.body;
+    
+    if (!email || !pass) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+    
+    try {
+        const user = await userService.loginUsuario(email, pass);
+        res.status(200).json({ message: 'Login exitoso', user });
+    } catch (e) {
+        res.status(401).json({ error: e.message });
+    }
+}); 
 
 // Ruta de Consulta de ususarios
 router.get('/users', async (req, res) => {

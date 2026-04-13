@@ -2,15 +2,41 @@ const bycrpt = require('bcrypt');
 const pool = require('../config/db');
 
 const crearUsuario = async (userData) => {
-    const { name_user, last_name, email, pass, is_active, rol } = userData;
+    const { name_user, last_name, email, pass, rol } = userData;
     const saltRounds = 10;
 
     const hashedPassword = await bycrpt.hash(pass, saltRounds);
+
+    const is_active = false; // Por defecto, el usuario se crea como inactivo
+
     const result = await pool.query(
         'INSERT INTO Users (name_user, last_name, email, pass, is_active, rol) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
         [name_user, last_name, email, hashedPassword, is_active, rol]
     );
     return result.rows[0];
+};
+
+const loginUsuario = async (email, pass) => {
+    const query = 'SELECT * FROM Users WHERE email = $1';
+    const result = await pool.query(query, [email]);
+    
+    const user = result.rows[0];
+    
+    // Si el usuario no existe, lanzamos un error
+    if (!user) {
+        throw new Error('Usuario no encontrado');
+    }
+    // Verificamos si el admin ya lo aprobo 
+    if (!user.is_active) {
+        throw new Error('Usuario no aprobado por el administrador');
+    }
+    // Comparamos la contraseña ingresada con la almacenada en la base de datos
+    const isMatch = await bycrpt.compare(pass, user.pass);
+    if(!isMatch) {
+        throw new Error('Contraseña incorrecta');
+    }
+
+    return user;
 };
 
 // Query para obtener usuarios sin incluir la contraseña
@@ -46,4 +72,10 @@ const eliminarUsuario = async () => {
     return result.rows[0];
 }
 
-module.exports = { crearUsuario, obtenerUsuarios, eliminarUsuario, actualizacionParametros };
+module.exports = { 
+    crearUsuario, 
+    obtenerUsuarios, 
+    eliminarUsuario, 
+    actualizacionParametros,
+    loginUsuario
+};
