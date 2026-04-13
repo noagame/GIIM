@@ -3,14 +3,14 @@ const pool = require('./db');
 const initDb = async () => {
     try {
         await pool.query(`
-            CREATE TABLE IF NO EXISTS Users (
+            CREATE TABLE IF NOT EXISTS Users (
                 id_users SERIAL PRIMARY KEY,
                 name_user VARCHAR(25) NOT NULL,
                 last_name VARCHAR(25) NOT NULL,
                 email VARCHAR(50) NOT NULL UNIQUE,
-                pass VARCHAR(50) NOT NULL, 
+                pass VARCHAR(255) NOT NULL,
                 is_active BOOLEAN DEFAULT false,
-                rol VARCHAR(10) NOT NULL
+                rol VARCHAR(20) NOT NULL
             );
         `);
         console.log('Tabela "usuarios" creada o existe.');

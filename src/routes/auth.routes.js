@@ -5,13 +5,17 @@ const { validarRegistro } = require('../middlewares/auth.middleware'); // Import
 
 // Ruta de registro de usuario
 router.post('/register', validarRegistro, async (req, res) => {
-    console.log("📥 Nueva solicitud de registro recibida:", req.body); // <-- Agrega esta línea
     try {
         // Usamos el servicio para crear el usuario
-        const nuevoUsuario = await userService.crearUsuario(req.body); 
+        const nuevoUsuario = await userService.crearUsuario(req.body);
 
         res.status(201).json({ message: "Usuario registrado. Pendiente a aprobación.", usuario: nuevoUsuario });
     } catch (e) {
+        // Violación de UNIQUE (email duplicado) → código PostgreSQL 23505
+        if (e.code === '23505') {
+            return res.status(409).json({ error: 'El correo electrónico ya está registrado' });
+        }
+        console.error('Error al registrar usuario:', e.message);
         res.status(500).json({ error: 'Error al registrar usuario' });
     }
 });
@@ -19,24 +23,24 @@ router.post('/register', validarRegistro, async (req, res) => {
 // Ruta de login de usuario
 router.post('/login', async (req, res) => {
     const { email, pass } = req.body;
-    
+
     if (!email || !pass) {
         return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
-    
+
     try {
         const user = await userService.loginUsuario(email, pass);
         res.status(200).json({ message: 'Login exitoso', user });
     } catch (e) {
         res.status(401).json({ error: e.message });
     }
-}); 
+});
 
 // Ruta de Consulta de ususarios
 router.get('/users', async (req, res) => {
     try {
         // Usamos el servicio para obtener los usuarios
-        const usuarios = await userService.obtenerUsuarios(); 
+        const usuarios = await userService.obtenerUsuarios();
         res.status(200).json(usuarios);
     } catch (e) {
         console.error('Error al obtener usuarios:', e);
@@ -59,7 +63,7 @@ router.patch('/users/:id', async (req, res) => {
             camposFiltrados[key] = camposRecibidos[key];
         }
     });
-        
+
     if (Object.keys(camposFiltrados).length === 0) {
         return res.status(400).json({ error: 'No hay campos validos para actualizar ' });
     }
@@ -81,7 +85,7 @@ router.patch('/users/:id', async (req, res) => {
 router.delete('/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const eliminado = await userService.eliminarUsuario();
+        const eliminado = await userService.eliminarUsuario(id);
         if (!eliminado) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
